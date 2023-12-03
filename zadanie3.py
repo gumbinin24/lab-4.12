@@ -1,27 +1,36 @@
 import csv
+from collections import defaultdict
 import matplotlib.pyplot as plt
 
+with open('passengers.csv', 'r') as file:
+    reader = csv.DictReader(file)
+    data = [(row['Month'], int(row['#Passengers'])) for row in reader]
 
-passenger_data = []
-with open('passengers.csv', 'r') as f:
-    reader = csv.reader(f)
-    next(reader)
-    for row in reader:
-        passenger_data.append(int(row[1]))
+years = sorted(set(month[:4] for month, _ in data))
+
+months_data = defaultdict(list)
+
+for month, passengers in data:
+    months_data[month[5:]].append(passengers)
+
+plt.figure(figsize=(12, 6))
+plt.plot(years, [sum(passengers for month, passengers in data if month.startswith(year)) for year in years])
+plt.title('Пассажиропоток за все время')
+plt.xlabel('Года')
+plt.ylabel('Количество пассажиров')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
 
 
-#построение линейного графика
-plt.figure(1)
-plt.plot(passenger_data)
-plt.title('Зависимость количества пассажиров от времени')
+plt.figure(figsize=(12, 6))
+for month, values in months_data.items():
+    plt.bar(month, sum(values), label=month)
+
+
+plt.title('Распределение пассажиров по месяцам (1951-1955)')
 plt.xlabel('Месяцы')
-plt.ylabel('Число пассажиров')
-
-
-#распределение пассажиров по месяцам в 1951-1955
-plt.figure(2)
-plt.hist(passenger_data, bins=12)
-plt.title('Распределение по месяцам')
-plt.xlabel('Число пассажиров')
-plt.ylabel('Частота')
+plt.ylabel('Количество пассажиров')
+plt.legend()
+plt.tight_layout()
 plt.show()
